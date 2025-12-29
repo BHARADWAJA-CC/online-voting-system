@@ -1,6 +1,8 @@
-from flask import Flask, jsonify, request
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 voted_users = set()
 votes = {"Candidate A": 0, "Candidate B": 0}
