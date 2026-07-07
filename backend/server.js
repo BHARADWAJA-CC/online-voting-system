@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const admin = require("firebase-admin");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 const voteRoutes = require("./routes/voteRoutes");
@@ -37,8 +39,21 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
 }
 
 // Middleware
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Rate limiter for /api/vote
+const voteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: { message: "Too many requests from this IP, please try again after 15 minutes" },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Apply rate limiter specifically to /api/vote route
+app.use("/api/vote", voteLimiter);
 
 // Routes
 app.use("/api", voteRoutes);
